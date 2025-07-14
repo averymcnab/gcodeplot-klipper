@@ -27,10 +27,10 @@ class Plotter(object):
     def __init__(self, xyMin=(7,8), xyMax=(204,178),
             drawSpeed=35, moveSpeed=40, zSpeed=5, workZ = 14.5, liftDeltaZ = 2.5, safeDeltaZ = 20,
             liftCommand=None, safeLiftCommand=None, downCommand=None, comment=";",
-            initCode = "G00 S1; endstops|"
-                       "G00 E0; no extrusion|"
-                       "G01 S1; endstops|"
-                       "G01 E0; no extrusion|"
+            initCode = "G0 S1; endstops|"
+                       "G0 E0; no extrusion|"
+                       "G1 S1; endstops|"
+                       "G1 E0; no extrusion|"
                        "G21; millimeters|"
                        "G91 G0 F%.1f{{zspeed*60}} Z%.3f{{safe}}; pen park !!Zsafe|"
                        "G90; absolute|"
@@ -377,7 +377,7 @@ def emitGcode(data, pens = {}, plotter=Plotter(), scalingMode=SCALE_NONE, align 
             else:
                 if relCode:
                     gcode.append('G90 ;Absolute mode for Z movement')
-                gcode.append('G00 F%.1f Z%.3f; pen park !!Zpark' % (plotter.zSpeed*60., plotter.safeUpZ))
+                gcode.append('G0 F%.1f Z%.3f; pen park !!Zpark' % (plotter.zSpeed*60., plotter.safeUpZ))
                 if relCode:
                     gcode.append('G91 ;Relative mode for XY movement')
 
@@ -385,8 +385,8 @@ def emitGcode(data, pens = {}, plotter=Plotter(), scalingMode=SCALE_NONE, align 
     if relCode:
         gcode.append('G91 ;Relative mode for XY movement')
     if not simulation:
-        gcode.append('G00 F%.1f Y%.3f; !!Ybottom' % (plotter.moveSpeed*60.,   plotter.xyMin[1]))
-        gcode.append('G00 F%.1f X%.3f; !!Xleft' % (plotter.moveSpeed*60.,   plotter.xyMin[0]))
+        gcode.append('G0 F%.1f Y%.3f; !!Ybottom' % (plotter.moveSpeed*60.,   plotter.xyMin[1]))
+        gcode.append('G0 F%.1f X%.3f; !!Xleft' % (plotter.moveSpeed*60.,   plotter.xyMin[0]))
 
     class State(object):
         pass
@@ -406,7 +406,7 @@ def emitGcode(data, pens = {}, plotter=Plotter(), scalingMode=SCALE_NONE, align 
                 if plotter.liftCommand:
                     gcode.extend(processCode(plotter.liftCommand))
                 else:
-                    gcode.append('G00 F%.1f Z%.3f; pen up !!Zup' % (plotter.zSpeed*60., plotter.penUpZ))
+                    gcode.append('G0 F%.1f Z%.3f; pen up !!Zup' % (plotter.zSpeed*60., plotter.penUpZ))
             if state.curZ is not None:
                 state.time += abs(plotter.penUpZ-state.curZ) / plotter.zSpeed
             state.curZ = plotter.penUpZ
@@ -419,7 +419,7 @@ def emitGcode(data, pens = {}, plotter=Plotter(), scalingMode=SCALE_NONE, align 
                 else:
                     if relCode:
                         gcode.append('G90 ;Absolute mode for Z movement')
-                    gcode.append('G00 F%.1f Z%.3f; pen down !!Zwork' % (plotter.zSpeed*60., plotter.workZ))
+                    gcode.append('G0 F%.1f Z%.3f; pen down !!Zwork' % (plotter.zSpeed*60., plotter.workZ))
                     if relCode:
                         gcode.append('G91 ;Relavite mode for XY-movement')
             state.time += abs(state.curZ-plotter.workZ) / plotter.zSpeed
@@ -443,7 +443,7 @@ def emitGcode(data, pens = {}, plotter=Plotter(), scalingMode=SCALE_NONE, align 
                 if relCode:
                     x -= state.curXY[0]
                     y -= state.curXY[1]
-                gcode.append('G0%d F%.1f X%.3f Y%.3f; %s !!Xleft+%.3f Ybottom+%.3f' % (
+                gcode.append('G%d F%.1f X%.3f Y%.3f; %s !!Xleft+%.3f Ybottom+%.3f' % (
                     1 if down else 0, speed*60., x, y, "draw" if down else "move",
                     p[0]-plotter.xyMin[0], p[1]-plotter.xyMin[1]))
             else:
